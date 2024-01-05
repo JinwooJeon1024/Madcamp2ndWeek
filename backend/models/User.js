@@ -15,6 +15,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   }
-});
+}, { collection: 'accounts'});
 
 module.exports = mongoose.model('User', UserSchema);
