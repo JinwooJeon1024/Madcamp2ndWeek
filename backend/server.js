@@ -1,5 +1,5 @@
 const express = require('express');
-const connectDB = require('./db')
+const { mongoDB } = require("./config/db");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User'); // User 모델을 불러옵니다. 경로는 실제 구조에 맞게 조정하세요.
@@ -54,10 +54,10 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Hello Worl!');
+  res.send('Hello World!');
 });
 
-connectDB()
+mongoDB()
 
 // 서버 시작
 app.listen(3000, () => {
