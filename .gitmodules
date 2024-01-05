@@ -1,0 +1,3 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/es10130813/Madcamp2ndWeek_front.git
