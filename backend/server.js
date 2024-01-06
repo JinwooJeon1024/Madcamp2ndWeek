@@ -27,11 +27,10 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-  const { id, password } = req.body;
-
+  const { uid, password } = req.body;
   try {
-    const user = await User.findOne({ id }); 
-    if (!user || !bcrypt.compareSync(password, user.password)) {
+    const user = await User.findOne({ uid }); 
+    if (!user || !(password == user.password)) {
       res.status(401).json({ message: 'Invalid credentials' });
     } else {
       res.status(200).json({ message: 'Login successful' });
