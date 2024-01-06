@@ -19,6 +19,7 @@ app.post('/register', async (req, res) => {
     const newUser = new User(req.body);
     console.log(newUser)
     await newUser.save();
+    console.log("hello")
     res.status(201).send(newUser);
   } catch (error) {
     res.status(500).send(error);
@@ -30,7 +31,6 @@ app.post('/login', async (req, res) => {
 
   try {
     const user = await User.findOne({ id }); 
-
     if (!user || !bcrypt.compareSync(password, user.password)) {
       res.status(401).json({ message: 'Invalid credentials' });
     } else {

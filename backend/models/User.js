@@ -6,12 +6,18 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  id: {
+  uid: {
     type: String,
     required: true,
     unique: true
   },
   password: {
+    type: String,
+    required: function() {
+      return this.type === 'local'; // type이 'local'일 때만 password 필수
+    }
+  },
+  type: {
     type: String,
     required: true
   }
