@@ -25,6 +25,22 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/login', async (req, res) => {
+  const { id, password } = req.body;
+
+  try {
+    const user = await User.findOne({ id }); 
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      res.status(401).json({ message: 'Invalid credentials' });
+    } else {
+      res.status(200).json({ message: 'Login successful' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.get('/', (req, res) => {
     res.send('Hello, World')
 })
