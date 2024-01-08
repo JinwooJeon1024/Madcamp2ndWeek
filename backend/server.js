@@ -6,15 +6,10 @@ const User = require('./models/User')
 const app = express();
 const cors = require('cors')
 const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+const io = require('socket.io')(http);
 
 app.use(bodyParser.json());
-// app.use(cors())
+app.use(cors())
 
 // MongoDB와의 연결 설정이 이미 이루어졌다고 가정
 // ...
@@ -54,14 +49,15 @@ app.get('/', (req, res) => {
 
 const rooms = {};
 
-io.on('connetcion', (socket) => {
-  console.log('User connected: ${socket.id}');
-  socket.on('joinRoom', (room) => {
+io.on('connection', (socket) => {
+  console.log('User connected' + socket.id);
+
+  socket.on('joinRoom', (data) => {  // 방 정보는 객체로 받음
+    const room = data.room;
     socket.join(room);
-    if(rooms[room]){
+    if(rooms[room]) {
       rooms[room]++;
-    }
-    else{
+    } else {
       rooms[room] = 1;
     }
     console.log(`User ${socket.id} joined room ${room}. Total users: ${rooms[room]}`);
@@ -88,6 +84,6 @@ io.on('connetcion', (socket) => {
 
 // 서버 시작
 const PORT = 3000; // 포트 설정
-app.listen(PORT, () => {
+http.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
