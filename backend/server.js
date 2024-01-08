@@ -40,6 +40,18 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.get('/ranking', async (req, res) => {
+  try {
+    // 모든 사용자 데이터를 가져옵니다.
+    const users = await User.find();
+    // 사용자 데이터를 JSON 형식으로 응답합니다.
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
 app.get('/', (req, res) => {
     res.send('Hello, World')
 })
