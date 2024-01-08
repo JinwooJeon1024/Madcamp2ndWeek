@@ -24,18 +24,24 @@ module.exports = function (io) {
             const userName = data.userName;
             console.log(rooms[roomCode].numOfPlayer);
             if (rooms[roomCode]) {
-                rooms[roomCode].players.push(socket.id);
-                rooms[roomCode].playerName.push(userName);
-                rooms[roomCode].numOfPlayer++;
-                let playerId = rooms[roomCode].players.length - 1;
-                socket.join(roomCode);
-                io.to(data.roomCode)
-                    .emit('roomJoined', { roomCode, 
-                                        playerId, 
-                                        socketID: socket.id, 
-                                        playerNames: rooms[roomCode].playerName });
-                console.log('room Joined!:', roomCode, 'playerID:',playerId);
-            } else {
+                if(rooms[roomCode].numOfPlayer >= 4){
+                    console.log("Full room");
+                }
+                else{
+                    rooms[roomCode].players.push(socket.id);
+                    rooms[roomCode].playerName.push(userName);
+                    rooms[roomCode].numOfPlayer++;
+                    let playerId = rooms[roomCode].players.length - 1;
+                    socket.join(roomCode);
+                    io.to(data.roomCode)
+                        .emit('roomJoined', { roomCode, 
+                                            playerId, 
+                                            socketID: socket.id, 
+                                            playerNames: rooms[roomCode].playerName });
+                    console.log('room Joined!:', roomCode, 'playerID:',playerId);
+                } 
+            }
+            else{
                 socket.emit('error', { message: 'Room not found!' });
             }
         });
@@ -48,7 +54,7 @@ module.exports = function (io) {
                     ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
                 };
             });
-            io.emit('updateRooms', roomsArray); // 모든 클라이언트에게 방 목록 배열을 전송
+            socket.emit('updateRooms', roomsArray); // 모든 클라이언트에게 방 목록 배열을 전송
         });
 
         socket.on('gameStart', (data) => {
