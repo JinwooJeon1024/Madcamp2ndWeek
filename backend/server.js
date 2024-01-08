@@ -26,6 +26,17 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/mypage', async (req, res) => {
+  const {uid} = req.body;
+  try {
+    const user = await User.findOne({ uid }); 
+    res.status(200).json({ message: user.username });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.post('/login', async (req, res) => {
   const { uid, password } = req.body;
   try {
@@ -45,11 +56,14 @@ app.get('/ranking', async (req, res) => {
     // 모든 사용자 데이터를 가져옵니다.
     const users = await User.find();
     // 사용자 데이터를 JSON 형식으로 응답합니다.
+    console.log('get ranking');
+    res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 app.get('/', (req, res) => {
