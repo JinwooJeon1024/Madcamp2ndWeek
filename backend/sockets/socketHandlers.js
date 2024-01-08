@@ -22,9 +22,11 @@ module.exports = function (io) {
         socket.on('joinRoom', (data) => {
             const roomCode = data.roomCode;
             const userName = data.userName;
+            console.log(rooms[roomCode].numOfPlayer);
             if (rooms[roomCode]) {
                 rooms[roomCode].players.push(socket.id);
                 rooms[roomCode].playerName.push(userName);
+                rooms[roomCode].numOfPlayer++;
                 let playerId = rooms[roomCode].players.length - 1;
                 socket.join(roomCode);
                 io.to(data.roomCode)
