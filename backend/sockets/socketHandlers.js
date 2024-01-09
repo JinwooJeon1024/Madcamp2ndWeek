@@ -32,21 +32,20 @@ module.exports = function (io) {
             const roomCode = data.roomCode;
             const userName = data.userName;
             const userID = data.userID;
-            console.log(rooms[roomCode].numOfPlayer);
-            console.log(rooms[roomCode].playerIDs.length);
+
             if (rooms[roomCode]) {
-                if(rooms[roomCode].playerIDs.length >= rooms[roomCode].numOfPlayer){
-                    console.log("Full room");
-                }
-                else{
+                if (rooms[roomCode].playerIDs.length < rooms[roomCode].numOfPlayer) {
                     rooms[roomCode].playerIDs.push(userID);
                     rooms[roomCode].playerNames.push(userName);
-                    let playerId = rooms[roomCode].playerIDs.length - 1;
+                    
                     socket.join(roomCode);
-                    console.log('room Joined!:', roomCode, 'playerID:',playerId);
-                } 
-            }
-            else{
+                    console.log('room Joined!:', roomCode, 'UserID:', userID);
+                } else {
+                    console.log("Full room");
+                    socket.emit('error', { message: 'Room is full!' });
+                }
+            } else {
+                console.log('Room not found:', roomCode);
                 socket.emit('error', { message: 'Room not found!' });
             }
         });
