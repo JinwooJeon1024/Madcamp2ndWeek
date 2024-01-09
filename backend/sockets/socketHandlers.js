@@ -6,11 +6,12 @@ module.exports = function (io) {
         socket.on('createRoom', (data) => {
             const hostName = data.hostName;
             const roomName = data.roomName;
+            const numOfPlayer = data.numOfPlayer
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
             rooms[roomCode] = { host: socket.id, 
                                 players: [socket.id], 
                                 playerName: [hostName], 
-                                numOfPlayer: 1,
+                                numOfPlayer: numOfPlayer,
                                 roomName: roomName
                             };
             socket.join(roomCode);
@@ -25,15 +26,16 @@ module.exports = function (io) {
         socket.on('joinRoom', (data) => {
             const roomCode = data.roomCode;
             const userName = data.userName;
+            const players = data.players
             console.log(rooms[roomCode].numOfPlayer);
+            console.log(rooms[roomCode].players.length);
             if (rooms[roomCode]) {
-                if(rooms[roomCode].numOfPlayer >= 4){
+                if(rooms[roomCode].players.length >= rooms[roomCode].numOfPlayer){
                     console.log("Full room");
                 }
                 else{
                     rooms[roomCode].players.push(socket.id);
                     rooms[roomCode].playerName.push(userName);
-                    rooms[roomCode].numOfPlayer++;
                     let playerId = rooms[roomCode].players.length - 1;
                     socket.join(roomCode);
                     io.to(data.roomCode)
