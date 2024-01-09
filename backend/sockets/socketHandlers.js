@@ -9,7 +9,6 @@ module.exports = function (io) {
             const roomName = data.roomName;
             const numOfPlayer = data.numOfPlayer
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
-
             rooms[roomCode] = { playerIDs: [hostID], 
                                 playerNames: [hostName], 
                                 numOfPlayer: numOfPlayer,
@@ -17,6 +16,14 @@ module.exports = function (io) {
                                 roomCode: roomCode
                             };
             socket.join(roomCode);
+            const roomsArray = Object.keys(rooms).map(key => {
+                return {
+                    roomCode: key,
+                    ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
+                };
+            });
+            socket.emit('updateRooms', roomsArray); // 모든 클라이언트에게 방 목록 배열을 전송
+            socket.emit('roomCreated', roomCode);
             console.log('room Created!:', roomCode);
             console.log('All existing room codes:', Object.keys(rooms).join(', '));
         });
