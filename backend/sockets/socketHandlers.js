@@ -37,6 +37,8 @@ module.exports = function (io) {
                     rooms[roomCode].playerNames.push(userName);
                     
                     socket.join(roomCode);
+                    const roomsArray = getRoomsArray();
+                    socket.to(roomCode).emit('updateRooms', roomsArray);
                     console.log('room Joined!:', roomCode, 'UserID:', userID);
                 } else {
                     console.log("Full room");
@@ -93,12 +95,8 @@ module.exports = function (io) {
     }
 
     // 변경된 방 정보를 모든 참가자에게 전송
-    io.to(roomCode).emit('roomUpdated', {
-        roomCode: roomCode,
-        playerIDs: room.playerIDs,
-        playerNames: room.playerNames,
-        numOfPlayer: room.numOfPlayer
-    });
+    const roomsArray = getRoomsArray();
+    socket.to(roomCode).emit('updateRooms', roomsArray);
 
     // 소켓이 해당 방을 나가게 함
     socket.leave(roomCode);
@@ -119,4 +117,13 @@ module.exports = function (io) {
     } while (rooms[roomCode]); // 방코드가 이미 존재하면 다시 생성
     return roomCode;
     }
+
+    function getRoomsArray() {
+            return Object.keys(rooms).map(key => {
+                return {
+                    roomCode: key,
+                    ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
+                };
+            });
+        }
 };
