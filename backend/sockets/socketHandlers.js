@@ -5,20 +5,18 @@ module.exports = function (io) {
 
         socket.on('createRoom', (data) => {
             const hostName = data.hostName;
+            const hostID = data.hostID
             const roomName = data.roomName;
             const numOfPlayer = data.numOfPlayer
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
-            rooms[roomCode] = { host: socket.id, 
-                                players: [socket.id], 
-                                playerName: [hostName], 
+
+            rooms[roomCode] = { playerIDs: [hostID], 
+                                playerNames: [hostName], 
                                 numOfPlayer: numOfPlayer,
-                                roomName: roomName
+                                roomName: roomName,
+                                roomCode: roomCode
                             };
             socket.join(roomCode);
-            socket.emit('roomCreated', { roomCode, 
-                                        playerId: 0, 
-                                        socketID: socket.id, 
-                                        playerNames: rooms[roomCode].playerName });
             console.log('room Created!:', roomCode);
             console.log('All existing room codes:', Object.keys(rooms).join(', '));
         });
@@ -26,23 +24,18 @@ module.exports = function (io) {
         socket.on('joinRoom', (data) => {
             const roomCode = data.roomCode;
             const userName = data.userName;
-            const players = data.players
+            const userID = data.userID;
             console.log(rooms[roomCode].numOfPlayer);
-            console.log(rooms[roomCode].players.length);
+            console.log(rooms[roomCode].playerIDs.length);
             if (rooms[roomCode]) {
-                if(rooms[roomCode].players.length >= rooms[roomCode].numOfPlayer){
+                if(rooms[roomCode].playerIDs.length >= rooms[roomCode].numOfPlayer){
                     console.log("Full room");
                 }
                 else{
-                    rooms[roomCode].players.push(socket.id);
-                    rooms[roomCode].playerName.push(userName);
-                    let playerId = rooms[roomCode].players.length - 1;
+                    rooms[roomCode].playerIDs.push(userID);
+                    rooms[roomCode].playerNames.push(userName);
+                    let playerId = rooms[roomCode].playerIDs.length - 1;
                     socket.join(roomCode);
-                    io.to(data.roomCode)
-                        .emit('roomJoined', { roomCode, 
-                                            playerId, 
-                                            socketID: socket.id, 
-                                            playerNames: rooms[roomCode].playerName });
                     console.log('room Joined!:', roomCode, 'playerID:',playerId);
                 } 
             }
@@ -83,23 +76,31 @@ module.exports = function (io) {
             }
         });
 
-        socket.on("roomQuit", (data) => {
-            const roomCode = data.roomCode;
-            const socketID = data.socketID;
+    socket.on("roomQuit", (data) => {
+    const { roomCode, userId } = data;
+    const room = rooms[roomCode];
 
-            // 플레이어를 방의 플레이어 목록에서 제거
-            for(let i=0;i<rooms[roomCode].players.length;i++){
-                console.log(rooms[roomCode].players[i]);
-                if(rooms[roomCode].players[i] === socketID){
-                    rooms[roomCode].players.splice(i, 1);
-                }
-            }
+    if (room) {
+    // 사용자를 방의 플레이어 목록에서 제거
+    const playerIndex = room.playerIDs.indexOf(userId);
+    if (playerIndex > -1) {
+        room.playerIDs.splice(playerIndex, 1);
+        room.playerNames.splice(playerIndex, 1);
+    }
 
-            //가장 마지막에 들어온 사람이 나갔다가 들어오는 것은 문제 X
-            //하지만 이미 들어와있던 사람이 나갔다가 들어오면 playerID가 꼬임
-            //playerID를 재조정하고 클라이언트에 업데이트 해주는 코드를 추가해줘야함
-            
-        });
+    // 변경된 방 정보를 모든 참가자에게 전송
+    io.to(roomCode).emit('roomUpdated', {
+        roomCode: roomCode,
+        playerIDs: room.playerIDs,
+        playerNames: room.playerNames,
+        numOfPlayer: room.numOfPlayer
+    });
+
+    // 소켓이 해당 방을 나가게 함
+    socket.leave(roomCode);
+    }
+    });
+
 
         socket.on('disconnect', () => {
             console.log('user disconnected');
