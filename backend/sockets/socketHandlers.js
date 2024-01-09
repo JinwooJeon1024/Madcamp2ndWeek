@@ -4,13 +4,11 @@ module.exports = function (io) {
         console.log('User connected:', socket.id);
 
         socket.on('createRoom', (data) => {
-            const hostName = data.hostName;
-            const hostID = data.hostID
             const roomName = data.roomName;
             const numOfPlayer = data.numOfPlayer
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
-            rooms[roomCode] = { playerIDs: [hostID], 
-                                playerNames: [hostName], 
+            rooms[roomCode] = { playerIDs: [], 
+                                playerNames: [], 
                                 numOfPlayer: numOfPlayer,
                                 roomName: roomName,
                                 roomCode: roomCode
