@@ -5,11 +5,14 @@ module.exports = function (io) {
 
         socket.on('createRoom', (data) => {
             const hostName = data.hostName;
+            const roomName = data.roomName;
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
             rooms[roomCode] = { host: socket.id, 
                                 players: [socket.id], 
                                 playerName: [hostName], 
-                                numOfPlayer: 1 };
+                                numOfPlayer: 1,
+                                roomName: roomName
+                            };
             socket.join(roomCode);
             socket.emit('roomCreated', { roomCode, 
                                         playerId: 0, 
