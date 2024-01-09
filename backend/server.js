@@ -1,17 +1,18 @@
-// server.js or app.js in Node.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const User = require('./models/User')
-
+const User = require('./models/User');
 const app = express();
+const cors = require('cors');
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const setupSocketHandlers = require('./sockets/socketHandlers');
+const { mongoDB } = require("./config/db");
+// const authRouts = require('./routes/authRouts');
 
 app.use(bodyParser.json());
-
-// MongoDB와의 연결 설정이 이미 이루어졌다고 가정
-// ...
-const { mongoDB } = require("./config/db");
-mongoDB()
+app.use(cors());
+mongoDB();
+setupSocketHandlers(io);
 
 // '/register' 엔드포인트 정의
 app.post('/register', async (req, res) => {
@@ -72,6 +73,6 @@ app.get('/', (req, res) => {
 
 // 서버 시작
 const PORT = 3000; // 포트 설정
-app.listen(PORT, () => {
+http.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
