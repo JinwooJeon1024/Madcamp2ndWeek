@@ -100,12 +100,24 @@ module.exports = function (io) {
     // 소켓이 해당 방을 나가게 함
     socket.leave(roomCode);
     }
-    if (room.playerIDs.length === 0) {
-        delete rooms[roomCode];
-    }
+    // if (room.playerIDs.length === 0) {
+    //     delete rooms[roomCode];
+    // }
     });
 
+ socket.on('endTurn', (data) => {
+    const roomCode = findRoomByPlayerId(data.playerId);
+    if (roomCode) {
+      const room = rooms[roomCode];
+      const currentPlayerIndex = room.playerIDs.indexOf(data.playerId);
+      const nextPlayerIndex = (currentPlayerIndex + 1) % room.playerIDs.length;
+      const nextPlayerId = room.playerIDs[nextPlayerIndex];
 
+      // 다음 플레이어에게 턴을 넘깁니다.
+      io.to(roomCode).emit('turnChanged', { currentPlayerId: nextPlayerId });
+      console.log(nextPlayerId)
+    }
+  });
         socket.on('disconnect', () => {
             console.log('user disconnected');
         });
@@ -120,12 +132,7 @@ module.exports = function (io) {
     return roomCode;
     }
 
-    function getRoomsArray() {
-            return Object.keys(rooms).map(key => {
-                return {
-                    roomCode: key,
-                    ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
-                };
-            });
-        }
+    function findRoomByPlayerId(playerId) {
+    return Object.keys(rooms).find(roomCode => rooms[roomCode].playerIDs.includes(playerId));
+    }
 };

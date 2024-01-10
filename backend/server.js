@@ -18,8 +18,6 @@ mongoDB();
 setupSocketHandlers(io);
 
 
-
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/') // 이미지를 저장할 폴더

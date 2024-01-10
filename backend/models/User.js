@@ -24,7 +24,6 @@ const UserSchema = new mongoose.Schema({
   profilePictureUrl: {
     type: String,
     default: "http://143.248.219.131:3000/images/default_profile.png"
-    // 기본값 설정 가능, 예: 'default_profile_picture.jpg'
   },
   rankingScore: {
     type: Number,
