@@ -100,6 +100,9 @@ module.exports = function (io) {
     // 소켓이 해당 방을 나가게 함
     socket.leave(roomCode);
     }
+    if (room.playerIDs.length === 0) {
+        delete rooms[roomCode];
+    }
     });
 
 
