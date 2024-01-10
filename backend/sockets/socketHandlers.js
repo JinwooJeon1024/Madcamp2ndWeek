@@ -38,6 +38,8 @@ module.exports = function (io) {
                     
                     socket.join(roomCode);
                     console.log('room Joined!:', roomCode, 'UserID:', userID);
+
+                    io.to(roomCode).emit('updateRoom', rooms[roomCode]);
                 } else {
                     console.log("Full room");
                     socket.emit('error', { message: 'Room is full!' });
@@ -91,6 +93,9 @@ module.exports = function (io) {
         room.playerIDs.splice(playerIndex, 1);
         room.playerNames.splice(playerIndex, 1);
     }
+
+    // 변경된 방 정보를 모든 참가자에게 전송
+    io.to(roomCode).emit('updateRoom', rooms[roomCode]);
 
     // 소켓이 해당 방을 나가게 함
     socket.leave(roomCode);
