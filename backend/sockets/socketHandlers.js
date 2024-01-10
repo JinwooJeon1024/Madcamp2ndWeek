@@ -98,11 +98,11 @@ module.exports = function (io) {
     io.to(roomCode).emit('updateRoom', rooms[roomCode]);
 
     // 소켓이 해당 방을 나가게 함
+    if (room.playerIDs.length === 0) {
+        delete rooms[roomCode];
+    }
     socket.leave(roomCode);
     }
-    // if (room.playerIDs.length === 0) {
-    //     delete rooms[roomCode];
-    // }
     });
 
  socket.on('endTurn', (data) => {
@@ -112,9 +112,10 @@ module.exports = function (io) {
       const currentPlayerIndex = room.playerIDs.indexOf(data.playerId);
       const nextPlayerIndex = (currentPlayerIndex + 1) % room.playerIDs.length;
       const nextPlayerId = room.playerIDs[nextPlayerIndex];
+      const pile = data.pile;
 
       // 다음 플레이어에게 턴을 넘깁니다.
-      io.to(roomCode).emit('turnChanged', { currentPlayerId: nextPlayerId });
+      io.to(roomCode).emit('turnChanged', { currentPlayerId: nextPlayerId, pile: pile });
       console.log(nextPlayerId)
     }
   });
