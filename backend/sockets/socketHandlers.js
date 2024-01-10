@@ -4,17 +4,24 @@ module.exports = function (io) {
         console.log('User connected:', socket.id);
 
         socket.on('createRoom', (data) => {
-            const hostName = data.hostName;
+            const roomName = data.roomName;
+            const numOfPlayer = data.numOfPlayer
             let roomCode = generateRoomCode(); // 6자리 방 코드 생성 함수
-            rooms[roomCode] = { host: socket.id, 
-                                players: [socket.id], 
-                                playerName: [hostName], 
-                                numOfPlayer: 1 };
+            rooms[roomCode] = { playerIDs: [], 
+                                playerNames: [], 
+                                numOfPlayer: numOfPlayer,
+                                roomName: roomName,
+                                roomCode: roomCode
+                            };
             socket.join(roomCode);
-            socket.emit('roomCreated', { roomCode, 
-                                        playerId: 0, 
-                                        socketID: socket.id, 
-                                        playerNames: rooms[roomCode].playerName });
+            const roomsArray = Object.keys(rooms).map(key => {
+                return {
+                    roomCode: key,
+                    ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
+                };
+            });
+            socket.emit('updateRooms', roomsArray); // 모든 클라이언트에게 방 목록 배열을 전송
+            socket.emit('roomCreated', roomCode);
             console.log('room Created!:', roomCode);
             console.log('All existing room codes:', Object.keys(rooms).join(', '));
         });
@@ -22,26 +29,23 @@ module.exports = function (io) {
         socket.on('joinRoom', (data) => {
             const roomCode = data.roomCode;
             const userName = data.userName;
-            console.log(rooms[roomCode].numOfPlayer);
+            const userID = data.userID;
+
             if (rooms[roomCode]) {
-                if(rooms[roomCode].numOfPlayer >= 4){
-                    console.log("Full room");
-                }
-                else{
-                    rooms[roomCode].players.push(socket.id);
-                    rooms[roomCode].playerName.push(userName);
-                    rooms[roomCode].numOfPlayer++;
-                    let playerId = rooms[roomCode].players.length - 1;
+                if (rooms[roomCode].playerIDs.length < rooms[roomCode].numOfPlayer) {
+                    rooms[roomCode].playerIDs.push(userID);
+                    rooms[roomCode].playerNames.push(userName);
+                    
                     socket.join(roomCode);
-                    io.to(data.roomCode)
-                        .emit('roomJoined', { roomCode, 
-                                            playerId, 
-                                            socketID: socket.id, 
-                                            playerNames: rooms[roomCode].playerName });
-                    console.log('room Joined!:', roomCode, 'playerID:',playerId);
-                } 
-            }
-            else{
+                    console.log('room Joined!:', roomCode, 'UserID:', userID);
+
+                    io.to(roomCode).emit('updateRoom', rooms[roomCode]);
+                } else {
+                    console.log("Full room");
+                    socket.emit('error', { message: 'Room is full!' });
+                }
+            } else {
+                console.log('Room not found:', roomCode);
                 socket.emit('error', { message: 'Room not found!' });
             }
         });
@@ -78,23 +82,26 @@ module.exports = function (io) {
             }
         });
 
-        socket.on("roomQuit", (data) => {
-            const roomCode = data.roomCode;
-            const socketID = data.socketID;
+    socket.on("roomQuit", (data) => {
+    const { roomCode, userId } = data;
+    const room = rooms[roomCode];
 
-            // 플레이어를 방의 플레이어 목록에서 제거
-            for(let i=0;i<rooms[roomCode].players.length;i++){
-                console.log(rooms[roomCode].players[i]);
-                if(rooms[roomCode].players[i] === socketID){
-                    rooms[roomCode].players.splice(i, 1);
-                }
-            }
+    if (room) {
+    // 사용자를 방의 플레이어 목록에서 제거
+    const playerIndex = room.playerIDs.indexOf(userId);
+    if (playerIndex > -1) {
+        room.playerIDs.splice(playerIndex, 1);
+        room.playerNames.splice(playerIndex, 1);
+    }
 
-            //가장 마지막에 들어온 사람이 나갔다가 들어오는 것은 문제 X
-            //하지만 이미 들어와있던 사람이 나갔다가 들어오면 playerID가 꼬임
-            //playerID를 재조정하고 클라이언트에 업데이트 해주는 코드를 추가해줘야함
-            
-        });
+    // 변경된 방 정보를 모든 참가자에게 전송
+    io.to(roomCode).emit('updateRoom', rooms[roomCode]);
+
+    // 소켓이 해당 방을 나가게 함
+    socket.leave(roomCode);
+    }
+    });
+
 
         socket.on('disconnect', () => {
             console.log('user disconnected');
@@ -109,4 +116,13 @@ module.exports = function (io) {
     } while (rooms[roomCode]); // 방코드가 이미 존재하면 다시 생성
     return roomCode;
     }
+
+    function getRoomsArray() {
+            return Object.keys(rooms).map(key => {
+                return {
+                    roomCode: key,
+                    ...rooms[key]  // Spread 연산자를 사용하여 각 방의 상세 정보 포함
+                };
+            });
+        }
 };
