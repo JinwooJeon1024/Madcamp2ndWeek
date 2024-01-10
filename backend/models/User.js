@@ -20,7 +20,21 @@ const UserSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true
-  }
+  },
+  profilePictureUrl: {
+    type: String,
+    default: "http://143.248.219.131:3000/images/default_profile.png"
+    // 기본값 설정 가능, 예: 'default_profile_picture.jpg'
+  },
+  rankingScore: {
+    type: Number,
+    default: 0 // 초기 점수 설정
+  },
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+
 }, { collection: 'accounts'});
 
 module.exports = mongoose.model('User', UserSchema);
