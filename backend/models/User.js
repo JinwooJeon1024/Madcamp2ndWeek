@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
   },
   profilePictureUrl: {
     type: String,
-    default: "http://143.248.219.131:3000/images/default_profile.png"
+    default: "http://143.248.196.24:3000/images/default_profile.png"
   },
   rankingScore: {
     type: Number,

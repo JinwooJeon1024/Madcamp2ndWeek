@@ -115,7 +115,7 @@ module.exports = function (io) {
       const pile = data.pile;
 
       // 다음 플레이어에게 턴을 넘깁니다.
-      io.to(roomCode).emit('turnChanged', { currentPlayerId: nextPlayerId, pile: pile });
+      io.to(roomCode).emit('turnChanged', { currentPlayerId: nextPlayerId, pile: pile});
       console.log(nextPlayerId)
     }
   });

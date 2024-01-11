@@ -34,7 +34,7 @@ app.post('/profile', upload.single('image'), async (req, res) => {
   }
 
   const uid = req.body.uid; // 클라이언트에서 전송된 UID
-  const imageUrl = `http://143.248.219.131:3000/uploads/${req.file.filename}`;
+  const imageUrl = `http://143.248.196.24:3000/uploads/${req.file.filename}`;
 
   try {
     // UID를 사용하여 사용자 찾기 및 프로필 이미지 URL 업데이트
